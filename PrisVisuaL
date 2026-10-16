@@ -1,0 +1,471 @@
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- Feature States
+local aimbotEnabled = false
+local espEnabled = false
+local noclipEnabled = false
+local godmodeEnabled = false
+local infJumpEnabled = false
+
+-- Font Constant
+local ARCADE_FONT = Enum.Font.Arcade
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PrisVisualsMM2Gui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Menu Toggle Button (Left-center, "G" text, Red theme, Bright & Visible)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Name = "ToggleMenuBtn"
+toggleBtn.Size = UDim2.new(0, 52, 0, 52)
+toggleBtn.Position = UDim2.new(0, 12, 0.5, -26)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(30, 15, 15)
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleBtn.Text = "G"
+toggleBtn.TextSize = 32
+toggleBtn.Font = ARCADE_FONT
+toggleBtn.AutoButtonColor = false
+toggleBtn.Parent = screenGui
+
+local btnCorner = Instance.new("UICorner")
+btnCorner.CornerRadius = UDim.new(0, 12)
+btnCorner.Parent = toggleBtn
+
+local btnStroke = Instance.new("UIStroke")
+btnStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+btnStroke.Color = Color3.fromRGB(231, 76, 60)
+btnStroke.Thickness = 2.5
+btnStroke.Parent = toggleBtn
+
+local btnGradient = Instance.new("UIGradient")
+btnGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 18, 18)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 10, 10))
+})
+btnGradient.Rotation = 45
+btnGradient.Parent = toggleBtn
+
+-- Main Frame (PrisVisuaLs)
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 250, 0, 340)
+mainFrame.Position = UDim2.new(0.5, -125, 0.5, -170)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 12)
+mainFrame.BorderSizePixel = 0
+mainFrame.Visible = false
+mainFrame.ClipsDescendants = true
+mainFrame.Parent = screenGui
+
+local frameCorner = Instance.new("UICorner")
+frameCorner.CornerRadius = UDim.new(0, 14)
+frameCorner.Parent = mainFrame
+
+local frameStroke = Instance.new("UIStroke")
+frameStroke.Color = Color3.fromRGB(231, 76, 60)
+frameStroke.Thickness = 2
+frameStroke.Parent = mainFrame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Name = "Title"
+title.Size = UDim2.new(1, 0, 0, 30)
+title.Position = UDim2.new(0, 0, 0, 5)
+title.BackgroundTransparency = 1
+title.Text = "PrisVisuaLs"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 22
+title.Font = ARCADE_FONT
+title.Parent = mainFrame
+
+local titleStroke = Instance.new("UIStroke")
+titleStroke.Color = Color3.fromRGB(231, 76, 60)
+titleStroke.Thickness = 0.8
+titleStroke.Transparency = 0.3
+titleStroke.Parent = title
+
+-- Subtitle (Murder Mystery 2)
+local subtitle = Instance.new("TextLabel")
+subtitle.Size = UDim2.new(1, 0, 0, 18)
+subtitle.Position = UDim2.new(0, 0, 0, 32)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "Murder Mystery 2"
+subtitle.TextColor3 = Color3.fromRGB(180, 100, 100)
+subtitle.TextSize = 12
+subtitle.Font = ARCADE_FONT
+subtitle.Parent = mainFrame
+
+-- Divider Line
+local divider = Instance.new("Frame")
+divider.Size = UDim2.new(1, -24, 0, 1)
+divider.Position = UDim2.new(0, 12, 0, 54)
+divider.BackgroundColor3 = Color3.fromRGB(60, 25, 25)
+divider.BorderSizePixel = 0
+divider.Parent = mainFrame
+
+-- Toggle Menu Visibility
+toggleBtn.MouseButton1Click:Connect(function()
+	mainFrame.Visible = not mainFrame.Visible
+end)
+
+toggleBtn.MouseEnter:Connect(function()
+	TweenService:Create(btnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(255, 100, 100)}):Play()
+end)
+toggleBtn.MouseLeave:Connect(function()
+	TweenService:Create(btnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(231, 76, 60)}):Play()
+end)
+
+-- Custom Toggle Button Creator with Red/Green Rolling Circle
+local function createCustomToggle(name, yPos, callback)
+	local container = Instance.new("Frame")
+	container.Size = UDim2.new(1, -24, 0, 32)
+	container.Position = UDim2.new(0, 12, 0, yPos)
+	container.BackgroundColor3 = Color3.fromRGB(26, 16, 16)
+	container.Parent = mainFrame
+
+	local containerCorner = Instance.new("UICorner")
+	containerCorner.CornerRadius = UDim.new(0, 8)
+	containerCorner.Parent = container
+
+	local containerStroke = Instance.new("UIStroke")
+	containerStroke.Color = Color3.fromRGB(60, 30, 30)
+	containerStroke.Thickness = 1
+	containerStroke.Parent = container
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -55, 1, 0)
+	label.Position = UDim2.new(0, 10, 0, 0)
+	label.BackgroundTransparency = 1
+	label.Text = name
+	label.TextColor3 = Color3.fromRGB(200, 180, 180)
+	label.TextSize = 15
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Font = ARCADE_FONT
+	label.Parent = container
+
+	local switchBg = Instance.new("Frame")
+	switchBg.Size = UDim2.new(0, 40, 0, 20)
+	switchBg.Position = UDim2.new(1, -46, 0.5, -10)
+	switchBg.BackgroundColor3 = Color3.fromRGB(35, 20, 20)
+	switchBg.Parent = container
+
+	local switchCorner = Instance.new("UICorner")
+	switchCorner.CornerRadius = UDim.new(1, 0)
+	switchCorner.Parent = switchBg
+
+	local switchDot = Instance.new("Frame")
+	switchDot.Size = UDim2.new(0, 16, 0, 16)
+	switchDot.Position = UDim2.new(0, 2, 0.5, -8)
+	switchDot.BackgroundColor3 = Color3.fromRGB(231, 76, 60) -- Red initially
+	switchDot.Parent = switchBg
+
+	local dotCorner = Instance.new("UICorner")
+	dotCorner.CornerRadius = UDim.new(1, 0)
+	dotCorner.Parent = switchDot
+
+	local clickBtn = Instance.new("TextButton")
+	clickBtn.Size = UDim2.new(1, 0, 1, 0)
+	clickBtn.BackgroundTransparency = 1
+	clickBtn.Text = ""
+	clickBtn.Parent = container
+
+	local state = false
+	clickBtn.MouseButton1Click:Connect(function()
+		state = not state
+		if state then
+			TweenService:Create(switchDot, TweenInfo.new(0.2), {
+				Position = UDim2.new(1, -18, 0.5, -8),
+				BackgroundColor3 = Color3.fromRGB(46, 204, 113) -- Green ON
+			}):Play()
+			TweenService:Create(label, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+		else
+			TweenService:Create(switchDot, TweenInfo.new(0.2), {
+				Position = UDim2.new(0, 2, 0.5, -8),
+				BackgroundColor3 = Color3.fromRGB(231, 76, 60) -- Red OFF
+			}):Play()
+			TweenService:Create(label, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(200, 180, 180)}):Play()
+		end
+		callback(state)
+	end)
+end
+
+-- Create Toggles in Menu
+createCustomToggle("Aimbot", 62, function(state)
+	aimbotEnabled = state
+end)
+
+createCustomToggle("Player ESP", 100, function(state)
+	espEnabled = state
+end)
+
+createCustomToggle("No-Clip", 138, function(state)
+	noclipEnabled = state
+end)
+
+createCustomToggle("God Mode", 176, function(state)
+	godmodeEnabled = state
+end)
+
+createCustomToggle("Infinity Jump", 214, function(state)
+	infJumpEnabled = state
+end)
+
+-- Teleport Menu Button
+local tpMenuBtn = Instance.new("TextButton")
+tpMenuBtn.Size = UDim2.new(1, -24, 0, 32)
+tpMenuBtn.Position = UDim2.new(0, 12, 0, 252)
+tpMenuBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40)
+tpMenuBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpMenuBtn.Text = "TELEPORT MENU"
+tpMenuBtn.TextSize = 15
+tpMenuBtn.Font = ARCADE_FONT
+tpMenuBtn.Parent = mainFrame
+
+local tpCorner = Instance.new("UICorner")
+tpCorner.CornerRadius = UDim.new(0, 8)
+tpCorner.Parent = tpMenuBtn
+
+local tpStroke = Instance.new("UIStroke")
+tpStroke.Color = Color3.fromRGB(231, 76, 60)
+tpStroke.Thickness = 1
+tpStroke.Parent = tpMenuBtn
+
+-- Teleport Selection Window (Sub-menu)
+local tpFrame = Instance.new("ScrollingFrame")
+tpFrame.Name = "TeleportFrame"
+tpFrame.Size = UDim2.new(0, 200, 0, 260)
+tpFrame.Position = UDim2.new(1, 10, 0, 0)
+tpFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 12)
+tpFrame.Visible = false
+tpFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+tpFrame.Parent = mainFrame
+
+local tpFrameCorner = Instance.new("UICorner")
+tpFrameCorner.CornerRadius = UDim.new(0, 10)
+tpFrameCorner.Parent = tpFrame
+
+local tpFrameStroke = Instance.new("UIStroke")
+tpFrameStroke.Color = Color3.fromRGB(231, 76, 60)
+tpFrameStroke.Thickness = 1.5
+tpFrameStroke.Parent = tpFrame
+
+tpMenuBtn.MouseButton1Click:Connect(function()
+	tpFrame.Visible = not tpFrame.Visible
+end)
+
+-- Function to update Teleport player list
+local function refreshPlayerList()
+	for _, child in ipairs(tpFrame:GetChildren()) do
+		if child:IsA("TextButton") then
+			child:Destroy()
+		end
+	end
+	
+	local yOffset = 5
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			local pBtn = Instance.new("TextButton")
+			pBtn.Size = UDim2.new(1, -10, 0, 28)
+			pBtn.Position = UDim2.new(0, 5, 0, yOffset)
+			pBtn.BackgroundColor3 = Color3.fromRGB(40, 20, 20)
+			pBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+			pBtn.Text = player.Name
+			pBtn.TextSize = 14
+			pBtn.Font = ARCADE_FONT
+			pBtn.Parent = tpFrame
+			
+			local c = Instance.new("UICorner")
+			c.CornerRadius = UDim.new(0, 6)
+			c.Parent = pBtn
+			
+			pBtn.MouseButton1Click:Connect(function()
+				if player.Character and player.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+					LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
+				end
+			end)
+			
+			yOffset = yOffset + 32
+		end
+	end
+	tpFrame.CanvasSize = UDim2.new(0, 0, 0, yOffset)
+end
+
+tpMenuBtn.MouseButton1Click:Connect(function()
+	if tpFrame.Visible then
+		refreshPlayerList()
+	end
+end)
+
+-- MM2 Role Detection Helper
+local function getPlayerRole(plr)
+	if not plr.Character then return "Innocent" end
+	local backpack = plr:FindFirstChild("Backpack")
+	local char = plr.Character
+	
+	local function scanTools(container)
+		if not container then return false end
+		for _, item in ipairs(container:GetChildren()) do
+			if item:IsA("Tool") then
+				local name = item.Name:lower()
+				if name:find("knife") or name:find("cuchillo") then
+					return "Murderer"
+				elseif name:find("gun") or name:find("revolver") then
+					return "Sheriff"
+				end
+			end
+		end
+		return false
+	end
+	
+	if scanTools(char) == "Murderer" or scanTools(backpack) == "Murderer" then
+		return "Murderer"
+	elseif scanTools(char) == "Sheriff" or scanTools(backpack) == "Sheriff" then
+		return "Sheriff"
+	end
+	return "Innocent"
+end
+
+local function getMyRole()
+	return getPlayerRole(LocalPlayer)
+end
+
+-- ESP Management
+local highlights = {}
+RunService.RenderStepped:Connect(function()
+	for _, player in ipairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer then
+			if espEnabled and player.Character then
+				local hl = highlights[player]
+				if not hl then
+					hl = Instance.new("Highlight")
+					hl.Parent = player.Character
+					highlights[player] = hl
+				end
+				
+				local role = getPlayerRole(player)
+				if role == "Murderer" then
+					hl.FillColor = Color3.fromRGB(231, 76, 60) -- Red
+					hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+				elseif role == "Sheriff" then
+					hl.FillColor = Color3.fromRGB(0, 170, 255) -- Blue
+					hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+				else
+					hl.FillColor = Color3.fromRGB(46, 204, 113) -- Green
+					hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+				end
+				hl.Enabled = true
+			else
+				if highlights[player] then
+					highlights[player]:Destroy()
+					highlights[player] = nil
+				end
+			end
+		end
+	end
+end)
+
+-- MM2 Aimbot Logic
+local function getMM2AimbotTarget()
+	local myRole = getMyRole()
+	
+	if myRole == "Murderer" then
+		-- Target Sheriff first, then closest Innocent if Sheriff is dead
+		local sheriffTarget = nil
+		local closestInnocent = nil
+		local shortestDist = math.huge
+		
+		for _, player in ipairs(Players:GetPlayers()) do
+			if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+				local role = getPlayerRole(player)
+				if role == "Sheriff" then
+					return player.Character
+				elseif role == "Innocent" then
+					if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+						local dist = (LocalPlayer.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+						if dist < shortestDist then
+							shortestDist = dist
+							closestInnocent = player.Character
+						end
+					end
+				end
+			end
+		end
+		return closestInnocent
+		
+	elseif myRole == "Sheriff" then
+		-- Target Murderer
+		for _, player in ipairs(Players:GetPlayers()) do
+			if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") and player.Character:FindFirstChild("Humanoid") and player.Character.Humanoid.Health > 0 then
+				if getPlayerRole(player) == "Murderer" then
+					return player.Character
+				end
+			end
+		end
+		
+	elseif myRole == "Innocent" then
+		-- Target closest coin in workspace
+		local closestCoin = nil
+		local shortestDist = math.huge
+		local myPos = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position
+		
+		if myPos then
+			for _, obj in ipairs(workspace:GetDescendants()) do
+				if obj:IsA("BasePart") and (obj.Name:lower():find("coin") or obj.Name:lower():find("money")) then
+					local dist = (myPos - obj.Position).Magnitude
+					if dist < shortestDist then
+						shortestDist = dist
+						closestCoin = obj
+					end
+				end
+			end
+		end
+		if closestCoin then
+			return closestCoin
+		end
+	end
+	return nil
+end
+
+-- RenderStepped Loop for Aimbot, No-Clip, God Mode
+RunService.RenderStepped:Connect(function()
+	-- Aimbot execution
+	if aimbotEnabled then
+		local target = getMM2AimbotTarget()
+		if target then
+			local targetPos = target:IsA("Model") and target:FindFirstChild("Head") and target.Head.Position or (target:IsA("BasePart") and target.Position)
+			if targetPos then
+				local targetCFrame = CFrame.new(Camera.CFrame.Position, targetPos)
+				Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, 0.3)
+			end
+		end
+	end
+
+	-- No-Clip execution
+	if noclipEnabled and LocalPlayer.Character then
+		for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+			if part:IsA("BasePart") then
+				part.CanCollide = false
+			end
+		end
+	end
+
+	-- God Mode execution
+	if godmodeEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		LocalPlayer.Character.Humanoid.Health = LocalPlayer.Character.Humanoid.MaxHealth
+	end
+end)
+
+-- Infinity Jump
+UserInputService.JumpRequest:Connect(function()
+	if infJumpEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
